@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dò link ảnh theo mẫu</title>
+<style>
+:root{--bg:#f3f5f2;--surface:#fff;--ink:#17221b;--muted:#5d6b62;--line:#d5dcd6;--accent:#1d6b4a;--accent-ink:#fff;--bad:#a33;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--surface:#1b241f;--ink:#e6eee9;--muted:#93a399;--line:#2f3b34;--accent:#58c394;--accent-ink:#0b1510;--bad:#e88}}
+:root[data-theme="dark"]{--bg:#121815;--surface:#1b241f;--ink:#e6eee9;--muted:#93a399;--line:#2f3b34;--accent:#58c394;--accent-ink:#0b1510;--bad:#e88}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em}
+p.sub{margin:0 0 22px;color:var(--muted)}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+small{color:var(--muted)}
+.preview{margin-top:10px;padding:10px 12px;border-radius:8px;border:1px dashed var(--line);word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
+.actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+button{padding:11px 20px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
+button.go{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:not-allowed}
+.bar{height:8px;border-radius:4px;background:var(--line);margin-top:20px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent)}
+.stat{margin-top:8px;color:var(--muted);font-size:.9rem}
+#hits{margin-top:16px;display:grid;gap:10px}
+.hit{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--accent);border-radius:8px;background:var(--surface)}
+.hit img{width:64px;height:64px;object-fit:contain;background:var(--bg);border-radius:6px}
+.hit a{color:var(--accent);word-break:break-all;font-size:.85rem}
+.note{margin-top:28px;padding:12px 14px;border-left:3px solid var(--line);color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+<main>
+<h1>Dò link ảnh theo mẫu</h1>
+<p class="sub">Dùng <b>{}</b> làm chỗ cho ký tự ngẫu nhiên. Tool thử từng tổ hợp và báo link nào tải được ảnh.</p>
+
+<label for="tpl">Mẫu link</label>
+<input id="tpl" value="https://dl.cdn.freefiremobile.com/common/OB55/CSH/Achievements/A60062_{}.jpg" spellcheck="false">
+
+<div class="row">
+  <div>
+    <label for="len">Số ký tự</label>
+    <input id="len" type="number" min="1" max="6" value="4">
+  </div>
+  <div>
+    <label for="cs">Bộ ký tự</label>
+    <select id="cs">
+      <option value="abcdefghijklmnopqrstuvwxyz">a–z</option>
+      <option value="abcdefghijklmnopqrstuvwxyz0123456789">a–z + 0–9</option>
+      <option value="0123456789">0–9</option>
+      <option value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ">a–z + A–Z</option>
+    </select>
+  </div>
+  <div>
+    <label for="mode">Cách thử</label>
+    <select id="mode"><option value="seq">Lần lượt (aaaa → zzzz)</option><option value="rnd">Ngẫu nhiên</option></select>
+  </div>
+</div>
+<div class="row">
+  <div>
+    <label for="conc">Số yêu cầu song song</label>
+    <input id="conc" type="number" min="1" max="10" value="3">
+  </div>
+  <div>
+    <label for="delay">Nghỉ giữa các lượt (ms)</label>
+    <input id="delay" type="number" min="0" value="100">
+  </div>
+  <div>
+    <label for="max">Tối đa số lần thử</label>
+    <input id="max" type="number" min="1" value="5000">
+  </div>
+</div>
+
+<label for="tst">Kiểm tra bằng link ảnh có sẵn</label>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+  <input id="tst" style="flex:1;min-width:220px" placeholder="Dán link ảnh bạn biết chắc là có thật" spellcheck="false">
+  <button id="tbtn">Kiểm tra</button>
+</div>
+<div class="stat" id="tres">Dán một link ảnh đang hoạt động để xác nhận tool nhận ra được ảnh.</div>
+
+<div class="preview" id="pv"></div>
+<small id="total"></small>
+
+<div class="actions">
+  <button class="go" id="start">Bắt đầu dò</button>
+  <button id="stop" disabled>Dừng</button>
+  <button id="copy">Sao chép kết quả</button>
+</div>
+
+<div class="bar"><i id="fill"></i></div>
+<div class="stat" id="stat">Chưa chạy.</div>
+<div id="hits"></div>
+
+<div class="note">Tool thử tải ảnh trực tiếp từ trình duyệt, nên không cần máy chủ. Mặc định tốc độ thấp để tránh làm quá tải CDN; 4 ký tự a–z là 456.976 tổ hợp, nên hãy giới hạn số lần thử hoặc dùng chế độ ngẫu nhiên. Chỉ dùng cho nội dung công khai, không cần đăng nhập.</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let running=false, found=[];
+function cfg(){
+  return {tpl:$('tpl').value.trim(),len:Math.max(1,Math.min(6,+$('len').value||4)),cs:$('cs').value,mode:$('mode').value,
+    conc:Math.max(1,Math.min(10,+$('conc').value||3)),delay:Math.max(0,+$('delay').value||0),max:Math.max(1,+$('max').value||1)};
+}
+function build(tpl,s){return tpl.includes('{}')?tpl.replace('{}',s):null}
+function refresh(){
+  const c=cfg(), total=Math.pow(c.cs.length,c.len);
+  const ex=c.cs[0].repeat(c.len);
+  $('pv').textContent=build(c.tpl,ex)||'Mẫu cần chứa {}';
+  $('total').textContent='Tổng số tổ hợp: '+total.toLocaleString('vi-VN');
+}
+['tpl','len','cs','mode','conc','delay','max'].forEach(i=>$(i).addEventListener('input',refresh));
+refresh();
+
+function* seq(cs,len){
+  const idx=new Array(len).fill(0), n=cs.length;
+  while(true){
+    yield idx.map(i=>cs[i]).join('');
+    let p=len-1;
+    while(p>=0){idx[p]++; if(idx[p]<n)break; idx[p]=0;p--}
+    if(p<0)return;
+  }
+}
+function* rnd(cs,len,seen){
+  const total=Math.pow(cs.length,len);
+  while(seen.size<total){
+    let s='';for(let i=0;i<len;i++)s+=cs[Math.floor(Math.random()*cs.length)];
+    if(seen.has(s))continue;seen.add(s);yield s;
+  }
+}
+function probe(url){
+  return new Promise(res=>{
+    const im=new Image(); let done=false;
+    const fin=ok=>{if(done)return;done=true;im.onload=im.onerror=null;res(ok)};
+    im.onload=()=>fin(true); im.onerror=()=>fin(false);
+    setTimeout(()=>fin(false),10000);
+    im.referrerPolicy='no-referrer'; im.src=url;
+  });
+}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+async function run(){
+  const c=cfg();
+  if(!c.tpl.includes('{}')){$('stat').textContent='Mẫu link cần chứa {} ở chỗ ký tự ngẫu nhiên.';return}
+  running=true;found=[];$('hits').innerHTML='';
+  $('start').disabled=true;$('stop').disabled=false;
+  const total=Math.min(c.max,Math.pow(c.cs.length,c.len));
+  const gen=c.mode==='seq'?seq(c.cs,c.len):rnd(c.cs,c.len,new Set());
+  let tried=0;
+  async function worker(){
+    while(running&&tried<total){
+      const n=gen.next(); if(n.done)return;
+      tried++;
+      const s=n.value, url=build(c.tpl,s);
+      const ok=await probe(url);
+      if(ok){found.push(url);addHit(url)}
+      $('fill').style.width=(tried/total*100)+'%';
+      $('stat').textContent='Đã thử '+tried.toLocaleString('vi-VN')+' / '+total.toLocaleString('vi-VN')+' · Tìm thấy '+found.length+' · Đang thử: '+s;
+      if(c.delay)await sleep(c.delay);
+    }
+  }
+  await Promise.all(Array.from({length:c.conc},worker));
+  running=false;$('start').disabled=false;$('stop').disabled=true;
+  $('stat').textContent='Xong. Đã thử '+tried.toLocaleString('vi-VN')+' lần, tìm thấy '+found.length+' link.';
+}
+function addHit(url){
+  const d=document.createElement('div');d.className='hit';
+  const im=document.createElement('img');im.src=url;im.referrerPolicy='no-referrer';im.alt='';
+  const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=url;
+  d.append(im,a);$('hits').prepend(d);
+}
+$('tbtn').onclick=async()=>{
+  const u=$('tst').value.trim();
+  if(!/^https?:\/\//i.test(u)){$('tres').textContent='Link cần bắt đầu bằng http:// hoặc https://';return}
+  $('tres').textContent='Đang kiểm tra...';
+  const ok=await probe(u);
+  $('tres').textContent=ok?'Tải được ảnh. Tool hoạt động bình thường.':'Không tải được ảnh. Kiểm tra lại link hoặc mạng của bạn.';
+  $('tres').style.color=ok?'var(--accent)':'var(--bad)';
+};
+$('start').onclick=run;
+$('stop').onclick=()=>{running=false};
+$('copy').onclick=async()=>{
+  try{await navigator.clipboard.writeText(found.join('\n'));$('copy').textContent='Đã sao chép'}catch(e){$('copy').textContent='Không sao chép được'}
+  setTimeout(()=>$('copy').textContent='Sao chép kết quả',1500);
+};
+</script>
+</body>
+</html>
