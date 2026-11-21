@@ -11,15 +11,16 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 :root[data-theme="dark"]{--bg:#121815;--surface:#1b241f;--ink:#e6eee9;--muted:#93a399;--line:#2f3b34;--accent:#58c394;--accent-ink:#0b1510;--bad:#e88}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
 main{max-width:760px;margin:0 auto;padding:28px 18px 60px}
-h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.01em}
-p.sub{margin:0 0 22px;color:var(--muted)}
+h1{font-size:1.6rem;margin:0 0 4px}
+p.sub{margin:0 0 18px;color:var(--muted)}
 label{display:block;font-weight:600;margin:14px 0 6px}
 input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:1px}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
-small{color:var(--muted)}
+small,.hint{color:var(--muted);font-size:.88rem}
+.hint code{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:0 5px}
 .preview{margin-top:10px;padding:10px 12px;border-radius:8px;border:1px dashed var(--line);word-break:break-all;font-family:ui-monospace,Menlo,monospace;font-size:.85rem}
 .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
 button{padding:11px 20px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-weight:600;cursor:pointer}
@@ -28,6 +29,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .bar{height:8px;border-radius:4px;background:var(--line);margin-top:20px;overflow:hidden}
 .bar i{display:block;height:100%;width:0;background:var(--accent)}
 .stat{margin-top:8px;color:var(--muted);font-size:.9rem}
+#warn{color:var(--bad);font-size:.9rem;margin-top:4px}
 #hits{margin-top:16px;display:grid;gap:10px}
 .hit{display:flex;gap:12px;align-items:center;padding:10px;border:1px solid var(--accent);border-radius:8px;background:var(--surface)}
 .hit img{width:64px;height:64px;object-fit:contain;background:var(--bg);border-radius:6px}
@@ -38,28 +40,35 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <body>
 <main>
 <h1>Dò link ảnh theo mẫu</h1>
-<p class="sub">Dùng <b>{}</b> làm chỗ cho ký tự ngẫu nhiên. Tool thử từng tổ hợp và báo link nào tải được ảnh.</p>
+<p class="sub">Đặt <b>{}</b> vào chỗ cần dò, rồi mô tả phần đó bằng mẫu ký tự bên dưới.</p>
 
 <label for="tpl">Mẫu link</label>
-<input id="tpl" value="https://dl.cdn.freefiremobile.com/common/OB55/CSH/Achievements/A60062_{}.jpg" spellcheck="false">
+<input id="tpl" value="https://dl.cdn.freefiremobile.com/common/OB56/CSH/Achievements/A60064_{}.jpg" spellcheck="false">
+
+<label for="pat">Mẫu ký tự cho {}</label>
+<input id="pat" value="?{4}" spellcheck="false">
+<div class="hint">
+<code>?</code> chữ hoặc số · <code>@</code> chữ · <code>#</code> số · ký tự khác giữ nguyên.
+Thêm <code>{n}</code> hoặc <code>{n,m}</code> để lặp: <code>?{4}</code> = 4 ký tự, <code>?{3,6}</code> = từ 3 đến 6 ký tự.
+Ví dụ: <code>TOK?{6}</code>, <code>TOKGR@@####</code>, <code>TOK@{3}#{3,4}</code>.
+</div>
 
 <div class="row">
   <div>
-    <label for="len">Số ký tự</label>
-    <input id="len" type="number" min="1" max="6" value="4">
-  </div>
-  <div>
-    <label for="cs">Bộ ký tự</label>
-    <select id="cs">
-      <option value="abcdefghijklmnopqrstuvwxyz">a–z</option>
-      <option value="abcdefghijklmnopqrstuvwxyz0123456789">a–z + 0–9</option>
-      <option value="0123456789">0–9</option>
-      <option value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ">a–z + A–Z</option>
+    <label for="cm">Kiểu chữ</label>
+    <select id="cm">
+      <option value="both">Hoa + thường</option>
+      <option value="up">Chỉ IN HOA</option>
+      <option value="low">Chỉ thường</option>
     </select>
   </div>
   <div>
     <label for="mode">Cách thử</label>
-    <select id="mode"><option value="seq">Lần lượt (aaaa → zzzz)</option><option value="rnd">Ngẫu nhiên</option></select>
+    <select id="mode"><option value="rnd">Ngẫu nhiên</option><option value="seq">Lần lượt</option></select>
+  </div>
+  <div>
+    <label for="max">Tối đa số lần thử</label>
+    <input id="max" type="number" min="1" value="5000">
   </div>
 </div>
 <div class="row">
@@ -70,10 +79,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <div>
     <label for="delay">Nghỉ giữa các lượt (ms)</label>
     <input id="delay" type="number" min="0" value="0">
-  </div>
-  <div>
-    <label for="max">Tối đa số lần thử</label>
-    <input id="max" type="number" min="1" value="5000">
   </div>
 </div>
 
@@ -86,6 +91,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
 <div class="preview" id="pv"></div>
 <small id="total"></small>
+<div id="warn"></div>
 
 <div class="actions">
   <button class="go" id="start">Bắt đầu dò</button>
@@ -97,73 +103,111 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div class="stat" id="stat">Chưa chạy.</div>
 <div id="hits"></div>
 
-<div class="note">Tool thử tải ảnh trực tiếp từ trình duyệt, nên không cần máy chủ. Mặc định tốc độ thấp để tránh làm quá tải CDN; 4 ký tự a–z là 456.976 tổ hợp, nên hãy giới hạn số lần thử hoặc dùng chế độ ngẫu nhiên. Chỉ dùng cho nội dung công khai, không cần đăng nhập.</div>
+<div class="note">Tool thử tải ảnh trực tiếp từ trình duyệt. Không gian tìm kiếm thường rất lớn (ví dụ 6 ký tự chữ hoa + số là hơn 2 tỷ tổ hợp), nên chỉ có cơ hội thấp nếu đoán hoàn toàn ngẫu nhiên. Càng biết nhiều ký tự cố định thì càng thu hẹp được. Giữ tốc độ vừa phải để không bị CDN chặn IP.</div>
 </main>
 <script>
 const $=id=>document.getElementById(id);
-let running=false, found=[];
-function cfg(){
-  return {tpl:$('tpl').value.trim(),len:Math.max(1,Math.min(6,+$('len').value||4)),cs:$('cs').value,mode:$('mode').value,
-    conc:Math.max(1,Math.min(50,+$('conc').value||20)),delay:Math.max(0,+$('delay').value||0),max:Math.max(1,+$('max').value||1)};
+let running=false,found=[];
+const DIG='0123456789',LOW='abcdefghijklmnopqrstuvwxyz',UP=LOW.toUpperCase();
+function parse(pat,cm){
+  const L=cm==='up'?UP:cm==='low'?LOW:UP+LOW;
+  const S={'?':L+DIG,'@':L,'#':DIG},toks=[];let i=0;
+  while(i<pat.length){
+    const ch=pat[i++];let min=1,max=1;
+    if(S[ch]&&pat[i]==='{'){
+      const j=pat.indexOf('}',i);
+      const m=j>0&&pat.slice(i+1,j).match(/^(\d+)(?:,(\d+))?$/);
+      if(m){min=+m[1];max=m[2]?+m[2]:min;i=j+1}
+    }
+    if(max<min)[min,max]=[max,min];
+    if(max>16)throw new Error('Độ dài tối đa mỗi nhóm là 16');
+    toks.push({set:S[ch]||ch,min,max});
+  }
+  return toks;
 }
-function build(tpl,s){return tpl.includes('{}')?tpl.replace('{}',s):null}
+function variants(toks){
+  let out=[[]];
+  for(const t of toks){
+    const nx=[];
+    for(const v of out)for(let k=t.min;k<=t.max;k++)nx.push(v.concat(Array(k).fill(t.set)));
+    out=nx;if(out.length>300)throw new Error('Quá nhiều biến thể độ dài, hãy thu hẹp {n,m}');
+  }
+  return out;
+}
+function plan(){
+  const vs=variants(parse($('pat').value,$('cm').value));
+  const sizes=vs.map(v=>v.reduce((a,s)=>a*s.length,1));
+  return {vs,sizes,total:sizes.reduce((a,b)=>a+b,0)};
+}
+function* seq(vs){
+  for(const v of vs){
+    const n=v.length;if(!n){yield '';continue}
+    const idx=new Array(n).fill(0);
+    while(true){
+      let s='';for(let i=0;i<n;i++)s+=v[i][idx[i]];
+      yield s;
+      let p=n-1;
+      while(p>=0){idx[p]++;if(idx[p]<v[p].length)break;idx[p]=0;p--}
+      if(p<0)break;
+    }
+  }
+}
+function pick(vs,sizes,total){
+  let r=Math.random()*total,k=0;
+  while(k<vs.length-1&&r>=sizes[k]){r-=sizes[k];k++}
+  let s='';for(const set of vs[k])s+=set[Math.floor(Math.random()*set.length)];
+  return s;
+}
+function* rnd(vs,sizes,total){
+  const seen=total<=2e6?new Set():null;
+  while(!seen||seen.size<total){
+    const s=pick(vs,sizes,total);
+    if(seen){if(seen.has(s))continue;seen.add(s)}
+    yield s;
+  }
+}
+const build=(tpl,s)=>tpl.replace('{}',()=>s);
 function refresh(){
-  const c=cfg(), total=Math.pow(c.cs.length,c.len);
-  const ex=c.cs[0].repeat(c.len);
-  $('pv').textContent=build(c.tpl,ex)||'Mẫu cần chứa {}';
-  $('total').textContent='Tổng số tổ hợp: '+total.toLocaleString('vi-VN');
+  try{
+    const p=plan();
+    $('pv').textContent=$('tpl').value.includes('{}')?build($('tpl').value.trim(),pick(p.vs,p.sizes,p.total)):'Mẫu link cần chứa {}';
+    $('total').textContent='Tổng số tổ hợp: '+p.total.toLocaleString('vi-VN');
+    $('warn').textContent=p.total>1e7?'Không gian rất lớn: mỗi lần thử chỉ có xác suất khoảng 1/'+p.total.toLocaleString('vi-VN')+' nếu chỉ có một link đúng.':'';
+  }catch(e){$('pv').textContent=e.message;$('total').textContent='';$('warn').textContent=''}
 }
-['tpl','len','cs','mode','conc','delay','max'].forEach(i=>$(i).addEventListener('input',refresh));
+['tpl','pat','cm'].forEach(i=>$(i).addEventListener('input',refresh));
 refresh();
-
-function* seq(cs,len){
-  const idx=new Array(len).fill(0), n=cs.length;
-  while(true){
-    yield idx.map(i=>cs[i]).join('');
-    let p=len-1;
-    while(p>=0){idx[p]++; if(idx[p]<n)break; idx[p]=0;p--}
-    if(p<0)return;
-  }
-}
-function* rnd(cs,len,seen){
-  const total=Math.pow(cs.length,len);
-  while(seen.size<total){
-    let s='';for(let i=0;i<len;i++)s+=cs[Math.floor(Math.random()*cs.length)];
-    if(seen.has(s))continue;seen.add(s);yield s;
-  }
-}
 function probe(url){
   return new Promise(res=>{
-    const im=new Image(); let done=false;
+    const im=new Image();let done=false;
     const fin=ok=>{if(done)return;done=true;im.onload=im.onerror=null;res(ok)};
-    im.onload=()=>fin(true); im.onerror=()=>fin(false);
+    im.onload=()=>fin(true);im.onerror=()=>fin(false);
     setTimeout(()=>fin(false),6000);
-    im.referrerPolicy='no-referrer'; im.src=url;
+    im.referrerPolicy='no-referrer';im.src=url;
   });
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
-
 async function run(){
-  const c=cfg();
-  if(!c.tpl.includes('{}')){$('stat').textContent='Mẫu link cần chứa {} ở chỗ ký tự ngẫu nhiên.';return}
-  running=true;found=[];$('hits').innerHTML='';
-  $('start').disabled=true;$('stop').disabled=false;
-  const total=Math.min(c.max,Math.pow(c.cs.length,c.len));
-  const gen=c.mode==='seq'?seq(c.cs,c.len):rnd(c.cs,c.len,new Set());
+  const tpl=$('tpl').value.trim();
+  if(!tpl.includes('{}')){$('stat').textContent='Mẫu link cần chứa {} ở chỗ cần dò.';return}
+  let p;try{p=plan()}catch(e){$('stat').textContent=e.message;return}
+  const conc=Math.max(1,Math.min(50,+$('conc').value||20)),delay=Math.max(0,+$('delay').value||0),max=Math.max(1,+$('max').value||1);
+  running=true;found=[];$('hits').innerHTML='';$('start').disabled=true;$('stop').disabled=false;
+  const total=Math.min(max,p.total);
+  const gen=$('mode').value==='seq'?seq(p.vs):rnd(p.vs,p.sizes,p.total);
   let tried=0;
   async function worker(){
     while(running&&tried<total){
-      const n=gen.next(); if(n.done)return;
+      const n=gen.next();if(n.done)return;
       tried++;
-      const s=n.value, url=build(c.tpl,s);
-      const ok=await probe(url);
-      if(ok){found.push(url);addHit(url)}
+      const s=n.value,url=build(tpl,s);
+      if(await probe(url)){found.push(url);addHit(url)}
       $('fill').style.width=(tried/total*100)+'%';
       $('stat').textContent='Đã thử '+tried.toLocaleString('vi-VN')+' / '+total.toLocaleString('vi-VN')+' · Tìm thấy '+found.length+' · Đang thử: '+s;
-      if(c.delay)await sleep(c.delay);
+      if(delay)await sleep(delay);
     }
   }
-  await Promise.all(Array.from({length:c.conc},worker));
+  await Promise.all(Array.from({length:conc},worker));
   running=false;$('start').disabled=false;$('stop').disabled=true;
   $('stat').textContent='Xong. Đã thử '+tried.toLocaleString('vi-VN')+' lần, tìm thấy '+found.length+' link.';
 }
