@@ -66,10 +66,6 @@ Ví dụ: <code>TOK?{6}</code>, <code>TOKGR@@####</code>, <code>TOK@{3}#{3,4}</c
     <label for="mode">Cách thử</label>
     <select id="mode"><option value="rnd">Ngẫu nhiên</option><option value="seq">Lần lượt</option></select>
   </div>
-  <div>
-    <label for="max">Tối đa số lần thử</label>
-    <input id="max" type="number" min="1" value="5000">
-  </div>
 </div>
 <div class="row">
   <div>
@@ -101,6 +97,14 @@ Ví dụ: <code>TOK?{6}</code>, <code>TOKGR@@####</code>, <code>TOK@{3}#{3,4}</c
 
 <div class="bar"><i id="fill"></i></div>
 <div class="stat" id="stat">Chưa chạy.</div>
+<div id="ask" style="display:none;margin-top:16px;padding:14px;border:2px solid var(--accent);border-radius:8px;background:var(--surface)">
+  <b>Tìm thấy ảnh. Tool đang tạm dừng.</b>
+  <div style="display:flex;gap:12px;align-items:center;margin:10px 0">
+    <img id="askImg" alt="" referrerpolicy="no-referrer" style="width:72px;height:72px;object-fit:contain;border-radius:6px;background:var(--bg)">
+    <a id="askLink" target="_blank" rel="noopener noreferrer" style="color:var(--accent);word-break:break-all;font-size:.9rem"></a>
+  </div>
+  <div class="actions" style="margin-top:0"><button class="go" id="askGo">Chạy tiếp</button><button id="askStop">Dừng</button></div>
+</div>
 <div id="hits"></div>
 
 <div class="note">Tool thử tải ảnh trực tiếp từ trình duyệt. Không gian tìm kiếm thường rất lớn (ví dụ 6 ký tự chữ hoa + số là hơn 2 tỷ tổ hợp), nên chỉ có cơ hội thấp nếu đoán hoàn toàn ngẫu nhiên. Càng biết nhiều ký tự cố định thì càng thu hẹp được. Giữ tốc độ vừa phải để không bị CDN chặn IP.</div>
@@ -191,17 +195,19 @@ async function run(){
   const tpl=$('tpl').value.trim();
   if(!tpl.includes('{}')){$('stat').textContent='Mẫu link cần chứa {} ở chỗ cần dò.';return}
   let p;try{p=plan()}catch(e){$('stat').textContent=e.message;return}
-  const conc=Math.max(1,Math.min(50,+$('conc').value||20)),delay=Math.max(0,+$('delay').value||0),max=Math.max(1,+$('max').value||1);
+  const conc=Math.max(1,Math.min(50,+$('conc').value||20)),delay=Math.max(0,+$('delay').value||0);
   running=true;found=[];$('hits').innerHTML='';$('start').disabled=true;$('stop').disabled=false;
-  const total=Math.min(max,p.total);
+  const total=p.total;
   const gen=$('mode').value==='seq'?seq(p.vs):rnd(p.vs,p.sizes,p.total);
   let tried=0;
   async function worker(){
     while(running&&tried<total){
+      if(gate)await gate;
+      if(!running)return;
       const n=gen.next();if(n.done)return;
       tried++;
       const s=n.value,url=build(tpl,s);
-      if(await probe(url)){found.push(url);addHit(url)}
+      if(await probe(url)){found.push(url);addHit(url);askUser(url)}
       $('fill').style.width=(tried/total*100)+'%';
       $('stat').textContent='Đã thử '+tried.toLocaleString('vi-VN')+' / '+total.toLocaleString('vi-VN')+' · Tìm thấy '+found.length+' · Đang thử: '+s;
       if(delay)await sleep(delay);
@@ -225,8 +231,20 @@ $('tbtn').onclick=async()=>{
   $('tres').textContent=ok?'Tải được ảnh. Tool hoạt động bình thường.':'Không tải được ảnh. Kiểm tra lại link hoặc mạng của bạn.';
   $('tres').style.color=ok?'var(--accent)':'var(--bad)';
 };
+let gate=null,release=null;
+function askUser(url){
+  $('askLink').href=url;$('askLink').textContent=url;$('askImg').src=url;$('ask').style.display='block';
+  if(!gate)gate=new Promise(r=>release=r);
+}
+function resume(stop){
+  if(stop)running=false;
+  $('ask').style.display='none';
+  const r=release;gate=null;release=null;if(r)r();
+}
+$('askGo').onclick=()=>resume(false);
+$('askStop').onclick=()=>resume(true);
 $('start').onclick=run;
-$('stop').onclick=()=>{running=false};
+$('stop').onclick=()=>resume(true);
 $('copy').onclick=async()=>{
   try{await navigator.clipboard.writeText(found.join('\n'));$('copy').textContent='Đã sao chép'}catch(e){$('copy').textContent='Không sao chép được'}
   setTimeout(()=>$('copy').textContent='Sao chép kết quả',1500);
